@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LeetCode Sync Agent</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .container { max-width: 600px; margin: auto; }
+        .form { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        input, textarea { width: 100%; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #potd-btn { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LeetCode Sync Agent</h1>
+        <button id="potd-btn" onclick="fetchPOTD()">Fetch POTD</button>
+        <div class="form">
+            <h2>Add Problem</h2>
+            <input id="title" placeholder="Problem Title" required>
+            <input id="link" placeholder="Problem Link" required>
+            <input id="topics" placeholder="Topics (comma-separated, e.g., Binary Search, Array)" required>
+            <input id="difficulty" placeholder="Difficulty (Easy/Medium/Hard)" required>
+            <textarea id="code" placeholder="Solution Code" rows="10" required></textarea>
+            <textarea id="explanation" placeholder="Explanation (optional)" rows="5"></textarea>
+            <button onclick="addProblem()">Add to GitHub</button>
+        </div>
+    </div>
+    <script>
+        async function fetchPOTD() {
+            try {
+                const response = await fetch("/potd");
+                const data = await response.json();
+                if (!data.error) {
+                    document.getElementById("title").value = data.title;
+                    document.getElementById("link").value = data.link;
+                    document.getElementById("topics").value = data.topics.join(",");
+                    document.getElementById("difficulty").value = data.difficulty;
+                } else {
+                    alert("Failed to fetch POTD!");
+                }
+            } catch (error) {
+                alert("Error fetching POTD: " + error);
+            }
+        }
+
+        async function addProblem() {
+            const problem = {
+                title: document.getElementById("title").value,
+                link: document.getElementById("link").value,
+                topics: document.getElementById("topics").value,
+                difficulty: document.getElementById("difficulty").value,
+                code: document.getElementById("code").value,
+                explanation: document.getElementById("explanation").value
+            };
+            try {
+                const response = await fetch("/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(problem)
+                });
+                const data = await response.json();
+                alert(data.message);
+                // Clear form
+                document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+            } catch (error) {
+                alert("Error adding problem: " + error);
+            }
+        }
+    </script>
+</body>
+</html>
